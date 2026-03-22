@@ -1,0 +1,739 @@
+# Compile of tb_pan.v was successful.
+# Compile of fsm_pan.v was successful.
+# Compile of clk_divider.v was successful.
+# Compile of step_counter.v was successful.
+# Compile of stepper_driver.v was successful.
+# Compile of pan_top.v was successful.
+# 6 compiles, 0 failed with no errors.
+do run_sim.tcl
+# ** Warning: (vlib-34) Library already exists at "work".
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying C:/Users/khoin/Downloads/finalprj_4.0/pan_fsm.mpf
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:48:46 on Mar 21,2026
+# vlog -reportprogress 300 clk_divider.v 
+# -- Compiling module clk_divider
+# 
+# Top level modules:
+# 	clk_divider
+# End time: 22:48:46 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:48:46 on Mar 21,2026
+# vlog -reportprogress 300 fsm_pan.v 
+# -- Compiling module fsm_pan
+# 
+# Top level modules:
+# 	fsm_pan
+# End time: 22:48:46 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:48:46 on Mar 21,2026
+# vlog -reportprogress 300 step_counter.v 
+# -- Compiling module step_counter
+# 
+# Top level modules:
+# 	step_counter
+# End time: 22:48:46 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:48:46 on Mar 21,2026
+# vlog -reportprogress 300 stepper_driver.v 
+# -- Compiling module stepper_driver
+# 
+# Top level modules:
+# 	stepper_driver
+# End time: 22:48:46 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:48:46 on Mar 21,2026
+# vlog -reportprogress 300 pan_top.v 
+# -- Compiling module pan_top
+# 
+# Top level modules:
+# 	pan_top
+# End time: 22:48:47 on Mar 21,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:48:47 on Mar 21,2026
+# vlog -reportprogress 300 tb_pan.v 
+# -- Compiling module tb_pan
+# 
+# Top level modules:
+# 	tb_pan
+# End time: 22:48:47 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -t 1ns work.tb_pan 
+# Start time: 22:48:47 on Mar 21,2026
+# Loading work.tb_pan
+# Loading work.pan_top
+# Loading work.clk_divider
+# Loading work.fsm_pan
+# Loading work.step_counter
+# Loading work.stepper_driver
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: Administrator  Hostname: DUCTOAN  ProcessID: 23124
+#           Attempting to use alternate WLF file "./wlftj8f10r".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlftj8f10r
+# ====================================================
+#   MO PHONG: Stepper Pan Controller
+# ====================================================
+# 
+# --- TC1: Reset co ban ---
+# [0 ns] rst=1 btn=0 en=0 motor=1000
+# [55 ns] rst=0 btn=0 en=0 motor=1000
+# [PASS] TC1: motor=1000  en=0
+# 
+# --- TC2: Nhan btn -> quay 90 do -> dung ---
+# [265 ns] rst=1 btn=0 en=0 motor=1000
+# [315 ns] rst=0 btn=0 en=0 motor=1000
+# [335 ns] rst=0 btn=1 en=0 motor=1000
+# [345 ns] rst=0 btn=0 en=0 motor=1000
+# [WARN] TC2: en khong len HIGH trong 500 chu ky
+# [PASS] TC2: Motor da dung sau 50 buoc
+# 
+# --- TC3: Nhan btn lan 2 sau khi lan 1 xong ---
+# [5845 ns] rst=1 btn=0 en=0 motor=1000
+# [5895 ns] rst=0 btn=0 en=0 motor=1000
+# [5915 ns] rst=0 btn=1 en=0 motor=1000
+# [5925 ns] rst=0 btn=0 en=0 motor=1000
+# [WARN] TC3: en khong len HIGH trong 500 chu ky
+# [12425 ns] rst=0 btn=1 en=0 motor=1000
+# [12435 ns] rst=0 btn=0 en=0 motor=1000
+# [WARN] TC3: en khong len HIGH trong 500 chu ky
+# [PASS] TC3: Lan 2 quay thanh cong va dung
+# 
+# --- TC4: Reset giua chung ---
+# [17935 ns] rst=1 btn=0 en=0 motor=1000
+# [17985 ns] rst=0 btn=0 en=0 motor=1000
+# [18005 ns] rst=0 btn=1 en=0 motor=1000
+# [18015 ns] rst=0 btn=0 en=0 motor=1000
+# [43015 ns] rst=1 btn=0 en=0 motor=1000
+# [43045 ns] rst=0 btn=0 en=0 motor=1000
+# [PASS] TC4: Reset giua chung OK – motor=1000 en=0
+# 
+# --- TC5: Nhan btn trong khi dang quay (bo qua) ---
+# [43555 ns] rst=1 btn=0 en=0 motor=1000
+# [43605 ns] rst=0 btn=0 en=0 motor=1000
+# [43625 ns] rst=0 btn=1 en=0 motor=1000
+# [43635 ns] rst=0 btn=0 en=0 motor=1000
+# [63635 ns] rst=0 btn=1 en=0 motor=1000
+# [63645 ns] rst=0 btn=0 en=0 motor=1000
+# [PASS] TC5: Btn giua chung bi bo qua, motor dung binh thuong
+# 
+# ====================================================
+#   KET QUA: 5 / 5 test case PASS
+# ====================================================
+# 
+# ** Note: $finish    : tb_pan.v(207)
+#    Time: 65145 ns  Iteration: 0  Instance: /tb_pan
+# 1
+# Break in Module tb_pan at tb_pan.v line 207
+# 0 ns
+# 68402 ns
+# Compile of tb_pan.v was successful.
+# Compile of fsm_pan.v was successful.
+# Compile of clk_divider.v was successful.
+# Compile of step_counter.v was successful.
+# Compile of stepper_driver.v was successful.
+# Compile of pan_top.v was successful.
+# 6 compiles, 0 failed with no errors.
+quit -sim
+# End time: 22:50:26 on Mar 21,2026, Elapsed time: 0:01:39
+# Errors: 0, Warnings: 5
+do run_sim.tcl
+# ** Warning: (vlib-34) Library already exists at "work".
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying C:/Users/khoin/Downloads/finalprj_4.0/pan_fsm.mpf
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:50:30 on Mar 21,2026
+# vlog -reportprogress 300 clk_divider.v 
+# -- Compiling module clk_divider
+# 
+# Top level modules:
+# 	clk_divider
+# End time: 22:50:30 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:50:30 on Mar 21,2026
+# vlog -reportprogress 300 fsm_pan.v 
+# -- Compiling module fsm_pan
+# 
+# Top level modules:
+# 	fsm_pan
+# End time: 22:50:30 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:50:30 on Mar 21,2026
+# vlog -reportprogress 300 step_counter.v 
+# -- Compiling module step_counter
+# 
+# Top level modules:
+# 	step_counter
+# End time: 22:50:30 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:50:30 on Mar 21,2026
+# vlog -reportprogress 300 stepper_driver.v 
+# -- Compiling module stepper_driver
+# 
+# Top level modules:
+# 	stepper_driver
+# End time: 22:50:30 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:50:30 on Mar 21,2026
+# vlog -reportprogress 300 pan_top.v 
+# -- Compiling module pan_top
+# 
+# Top level modules:
+# 	pan_top
+# End time: 22:50:30 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:50:30 on Mar 21,2026
+# vlog -reportprogress 300 tb_pan.v 
+# -- Compiling module tb_pan
+# 
+# Top level modules:
+# 	tb_pan
+# End time: 22:50:30 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -t 1ns work.tb_pan 
+# Start time: 22:50:30 on Mar 21,2026
+# Loading work.tb_pan
+# Loading work.pan_top
+# Loading work.clk_divider
+# Loading work.fsm_pan
+# Loading work.step_counter
+# Loading work.stepper_driver
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: Administrator  Hostname: DUCTOAN  ProcessID: 23124
+#           Attempting to use alternate WLF file "./wlft4herqd".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlft4herqd
+# ====================================================
+#   MO PHONG: Stepper Pan Controller
+# ====================================================
+# 
+# --- TC1: Reset co ban ---
+# [0 ns] rst=1 btn=0 en=0 motor=1000
+# [55 ns] rst=0 btn=0 en=0 motor=1000
+# [PASS] TC1: motor=1000  en=0
+# 
+# --- TC2: Nhan btn -> quay 90 do -> dung ---
+# [265 ns] rst=1 btn=0 en=0 motor=1000
+# [315 ns] rst=0 btn=0 en=0 motor=1000
+# [335 ns] rst=0 btn=1 en=0 motor=1000
+# [345 ns] rst=0 btn=0 en=0 motor=1000
+# [WARN] TC2: en khong len HIGH trong 500 chu ky
+# [PASS] TC2: Motor da dung sau 50 buoc
+# 
+# --- TC3: Nhan btn lan 2 sau khi lan 1 xong ---
+# [5845 ns] rst=1 btn=0 en=0 motor=1000
+# [5895 ns] rst=0 btn=0 en=0 motor=1000
+# [5915 ns] rst=0 btn=1 en=0 motor=1000
+# [5925 ns] rst=0 btn=0 en=0 motor=1000
+# [WARN] TC3: en khong len HIGH trong 500 chu ky
+# [12425 ns] rst=0 btn=1 en=0 motor=1000
+# [12435 ns] rst=0 btn=0 en=0 motor=1000
+# [WARN] TC3: en khong len HIGH trong 500 chu ky
+# [PASS] TC3: Lan 2 quay thanh cong va dung
+# 
+# --- TC4: Reset giua chung ---
+# [17935 ns] rst=1 btn=0 en=0 motor=1000
+# [17985 ns] rst=0 btn=0 en=0 motor=1000
+# [18005 ns] rst=0 btn=1 en=0 motor=1000
+# [18015 ns] rst=0 btn=0 en=0 motor=1000
+# [43015 ns] rst=1 btn=0 en=0 motor=1000
+# [43045 ns] rst=0 btn=0 en=0 motor=1000
+# [PASS] TC4: Reset giua chung OK – motor=1000 en=0
+# 
+# --- TC5: Nhan btn trong khi dang quay (bo qua) ---
+# [43555 ns] rst=1 btn=0 en=0 motor=1000
+# [43605 ns] rst=0 btn=0 en=0 motor=1000
+# [43625 ns] rst=0 btn=1 en=0 motor=1000
+# [43635 ns] rst=0 btn=0 en=0 motor=1000
+# [63635 ns] rst=0 btn=1 en=0 motor=1000
+# [63645 ns] rst=0 btn=0 en=0 motor=1000
+# [PASS] TC5: Btn giua chung bi bo qua, motor dung binh thuong
+# 
+# ====================================================
+#   KET QUA: 5 / 5 test case PASS
+# ====================================================
+# 
+# 0 ns
+# 420 us
+quit -sim
+# End time: 22:58:04 on Mar 21,2026, Elapsed time: 0:07:34
+# Errors: 0, Warnings: 3
+do run_sim.tcl
+# ** Warning: (vlib-34) Library already exists at "work".
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying C:/Users/khoin/Downloads/finalprj_4.0/pan_fsm.mpf
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:58:07 on Mar 21,2026
+# vlog -reportprogress 300 clk_divider.v 
+# -- Compiling module clk_divider
+# 
+# Top level modules:
+# 	clk_divider
+# End time: 22:58:07 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:58:07 on Mar 21,2026
+# vlog -reportprogress 300 fsm_pan.v 
+# -- Compiling module fsm_pan
+# 
+# Top level modules:
+# 	fsm_pan
+# End time: 22:58:07 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:58:08 on Mar 21,2026
+# vlog -reportprogress 300 step_counter.v 
+# -- Compiling module step_counter
+# 
+# Top level modules:
+# 	step_counter
+# End time: 22:58:08 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:58:08 on Mar 21,2026
+# vlog -reportprogress 300 stepper_driver.v 
+# -- Compiling module stepper_driver
+# 
+# Top level modules:
+# 	stepper_driver
+# End time: 22:58:08 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:58:08 on Mar 21,2026
+# vlog -reportprogress 300 pan_top.v 
+# -- Compiling module pan_top
+# 
+# Top level modules:
+# 	pan_top
+# End time: 22:58:08 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:58:08 on Mar 21,2026
+# vlog -reportprogress 300 tb_pan.v 
+# -- Compiling module tb_pan
+# 
+# Top level modules:
+# 	tb_pan
+# End time: 22:58:08 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -t 1ns work.tb_pan 
+# Start time: 22:58:08 on Mar 21,2026
+# Loading work.tb_pan
+# Loading work.pan_top
+# Loading work.clk_divider
+# Loading work.fsm_pan
+# Loading work.step_counter
+# Loading work.stepper_driver
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: Administrator  Hostname: DUCTOAN  ProcessID: 23124
+#           Attempting to use alternate WLF file "./wlftzmmezk".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlftzmmezk
+# ====================================================
+#   MO PHONG: Stepper Pan Controller
+#   step_clk chu ky = 1000 ns, TARGET=50 buoc
+# ====================================================
+# 
+# --- TC1: Reset co ban ---
+# [PASS] TC1: motor=1000  en=0
+# 
+# --- TC2: Nhan btn -> quay 90 do -> dung ---
+# [PASS] TC2: Motor dung sau 50 buoc. motor=0010
+# 
+# --- TC3: Nhan btn lan 2 sau khi lan 1 xong ---
+# [PASS] TC3: Lan 2 quay thanh cong. motor=1000
+# 
+# --- TC4: Reset giua chung ---
+# [PASS] TC4: Reset giua chung – motor=1000 en=0
+# 
+# --- TC5: Nhan btn trong khi dang quay (bo qua) ---
+# [PASS] TC5: Btn giua chung bi bo qua, motor dung. motor=0010
+# 
+# ====================================================
+#   KET QUA: 5 / 5 test case PASS
+# ====================================================
+# 
+# ** Note: $finish    : tb_pan.v(229)
+#    Time: 248325 ns  Iteration: 1  Instance: /tb_pan
+# 1
+# Break in Module tb_pan at tb_pan.v line 229
+# 0 ns
+# 260741 ns
+quit -sim
+# End time: 23:01:17 on Mar 21,2026, Elapsed time: 0:03:09
+# Errors: 0, Warnings: 3
+# Compile of tb_pan.v was successful.
+# Compile of fsm_pan.v was successful.
+# Compile of clk_divider.v was successful.
+# Compile of step_counter.v was successful.
+# Compile of stepper_driver.v was successful.
+# Compile of pan_top.v was successful.
+# 6 compiles, 0 failed with no errors.
+do run_sim.tcl
+# ** Warning: (vlib-34) Library already exists at "work".
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying C:/Users/khoin/Downloads/finalprj_4.0/pan_fsm.mpf
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:23 on Mar 21,2026
+# vlog -reportprogress 300 clk_divider.v 
+# -- Compiling module clk_divider
+# 
+# Top level modules:
+# 	clk_divider
+# End time: 23:28:23 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:23 on Mar 21,2026
+# vlog -reportprogress 300 stepper_driver.v 
+# -- Compiling module stepper_driver
+# 
+# Top level modules:
+# 	stepper_driver
+# End time: 23:28:23 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:23 on Mar 21,2026
+# vlog -reportprogress 300 step_counter.v 
+# -- Compiling module step_counter
+# 
+# Top level modules:
+# 	step_counter
+# End time: 23:28:23 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:23 on Mar 21,2026
+# vlog -reportprogress 300 fsm_pan.v 
+# -- Compiling module fsm_pan
+# 
+# Top level modules:
+# 	fsm_pan
+# End time: 23:28:23 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:23 on Mar 21,2026
+# vlog -reportprogress 300 pan_top.v 
+# -- Compiling module pan_top
+# 
+# Top level modules:
+# 	pan_top
+# End time: 23:28:23 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:23 on Mar 21,2026
+# vlog -reportprogress 300 tb_pan.v 
+# -- Compiling module tb_pan
+# 
+# Top level modules:
+# 	tb_pan
+# End time: 23:28:23 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -t 1ns work.tb_pan 
+# Start time: 23:28:23 on Mar 21,2026
+# Loading work.tb_pan
+# Loading work.pan_top
+# Loading work.clk_divider
+# Loading work.fsm_pan
+# Loading work.step_counter
+# Loading work.stepper_driver
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: Administrator  Hostname: DUCTOAN  ProcessID: 23124
+#           Attempting to use alternate WLF file "./wlft2s47hv".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlft2s47hv
+# ====================================================
+#   MO PHONG: Multi-angle Stepper Pan Controller
+#   25 buoc = 45 do | 50 buoc = 90 do
+#   100 buoc = 180 do | 200 buoc = 360 do
+# ====================================================
+# 
+# --- TC1: Reset co ban ---
+# [PASS] TC1: motor=1000 en=0
+# 
+# --- TC2: Quay 45 do (angle=001) ---
+# [PASS] TC2: Quay 45 do xong. motor=0110
+# 
+# --- TC3: Quay 90 do (angle=010) ---
+# [PASS] TC3: Quay 90 do xong. motor=0010
+# 
+# --- TC4: Quay 180 do (angle=100) ---
+# [PASS] TC4: Quay 180 do xong. motor=0001
+# 
+# --- TC5: Quay 360 do (angle=111) ---
+# [PASS] TC5: Quay 360 do xong. motor=0100
+# 
+# --- TC6: 0->45 roi doi WAIT delay, tiep 45->90 ---
+# [PASS] TC6: 2x45 do thanh cong, co delay giua. motor=0001
+# 
+# --- TC7: Lan 1: 45 do, lan 2: 180 do ---
+# [PASS] TC7: Doi angle giua 2 lan OK. motor=1100
+# 
+# --- TC8: Reset giua chung khi dang quay 180 do ---
+# [PASS] TC8: Reset giua chung OK. motor=1000 en=0
+# 
+# ====================================================
+#   KET QUA: 8 / 8 test case PASS
+# ====================================================
+# 
+# ** Note: $finish    : tb_pan.v(244)
+#    Time: 672155 ns  Iteration: 1  Instance: /tb_pan
+# 1
+# Break in Module tb_pan at tb_pan.v line 244
+# 0 ns
+# 705763 ns
+quit -sim
+# Compile of tb_pan.v was successful.
+# Compile of fsm_pan.v was successful.
+# Compile of clk_divider.v was successful.
+# Compile of step_counter.v was successful.
+# Compile of stepper_driver.v was successful.
+# Compile of pan_top.v was successful.
+# 6 compiles, 0 failed with no errors.
+# End time: 23:28:51 on Mar 21,2026, Elapsed time: 0:00:28
+# Errors: 0, Warnings: 5
+do run_sim.tcl
+# ** Warning: (vlib-34) Library already exists at "work".
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying C:/Users/khoin/Downloads/finalprj_4.0/pan_fsm.mpf
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:57 on Mar 21,2026
+# vlog -reportprogress 300 clk_divider.v 
+# -- Compiling module clk_divider
+# 
+# Top level modules:
+# 	clk_divider
+# End time: 23:28:57 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:57 on Mar 21,2026
+# vlog -reportprogress 300 stepper_driver.v 
+# -- Compiling module stepper_driver
+# 
+# Top level modules:
+# 	stepper_driver
+# End time: 23:28:57 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:57 on Mar 21,2026
+# vlog -reportprogress 300 step_counter.v 
+# -- Compiling module step_counter
+# 
+# Top level modules:
+# 	step_counter
+# End time: 23:28:57 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:57 on Mar 21,2026
+# vlog -reportprogress 300 fsm_pan.v 
+# -- Compiling module fsm_pan
+# 
+# Top level modules:
+# 	fsm_pan
+# End time: 23:28:57 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:57 on Mar 21,2026
+# vlog -reportprogress 300 pan_top.v 
+# -- Compiling module pan_top
+# 
+# Top level modules:
+# 	pan_top
+# End time: 23:28:57 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:28:57 on Mar 21,2026
+# vlog -reportprogress 300 tb_pan.v 
+# -- Compiling module tb_pan
+# 
+# Top level modules:
+# 	tb_pan
+# End time: 23:28:57 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -t 1ns work.tb_pan 
+# Start time: 23:28:57 on Mar 21,2026
+# Loading work.tb_pan
+# Loading work.pan_top
+# Loading work.clk_divider
+# Loading work.fsm_pan
+# Loading work.step_counter
+# Loading work.stepper_driver
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: Administrator  Hostname: DUCTOAN  ProcessID: 23124
+#           Attempting to use alternate WLF file "./wlftrieybn".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlftrieybn
+# ====================================================
+#   MO PHONG: Multi-angle Stepper Pan Controller
+#   25 buoc = 45 do | 50 buoc = 90 do
+#   100 buoc = 180 do | 200 buoc = 360 do
+# ====================================================
+# 
+# --- TC1: Reset co ban ---
+# [PASS] TC1: motor=1000 en=0
+# 
+# --- TC2: Quay 45 do (angle=001) ---
+# [PASS] TC2: Quay 45 do xong. motor=0110
+# 
+# --- TC3: Quay 90 do (angle=010) ---
+# [PASS] TC3: Quay 90 do xong. motor=0010
+# 
+# --- TC4: Quay 180 do (angle=100) ---
+# [PASS] TC4: Quay 180 do xong. motor=0001
+# 
+# --- TC5: Quay 360 do (angle=111) ---
+# [PASS] TC5: Quay 360 do xong. motor=0100
+# 
+# --- TC6: 0->45 roi doi WAIT delay, tiep 45->90 ---
+# [PASS] TC6: 2x45 do thanh cong, co delay giua. motor=0001
+# 
+# --- TC7: Lan 1: 45 do, lan 2: 180 do ---
+# [PASS] TC7: Doi angle giua 2 lan OK. motor=1100
+# 
+# --- TC8: Reset giua chung khi dang quay 180 do ---
+# [PASS] TC8: Reset giua chung OK. motor=1000 en=0
+# 
+# ====================================================
+#   KET QUA: 8 / 8 test case PASS
+# ====================================================
+# 
+# ** Note: $finish    : tb_pan.v(244)
+#    Time: 672155 ns  Iteration: 1  Instance: /tb_pan
+# 1
+# Break in Module tb_pan at tb_pan.v line 244
+# 0 ns
+# 705763 ns
+# Compile of tb_pan.v was successful.
+# Compile of fsm_pan.v was successful.
+# Compile of clk_divider.v was successful.
+# Compile of step_counter.v was successful.
+# Compile of stepper_driver.v was successful.
+# Compile of pan_top.v was successful.
+# 6 compiles, 0 failed with no errors.
+quit -sim
+# End time: 23:30:47 on Mar 21,2026, Elapsed time: 0:01:50
+# Errors: 0, Warnings: 4
+do run_sim.tcl
+# ** Warning: (vlib-34) Library already exists at "work".
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying C:/Users/khoin/Downloads/finalprj_4.0/pan_fsm.mpf
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:30:53 on Mar 21,2026
+# vlog -reportprogress 300 clk_divider.v 
+# -- Compiling module clk_divider
+# 
+# Top level modules:
+# 	clk_divider
+# End time: 23:30:53 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:30:53 on Mar 21,2026
+# vlog -reportprogress 300 stepper_driver.v 
+# -- Compiling module stepper_driver
+# 
+# Top level modules:
+# 	stepper_driver
+# End time: 23:30:53 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:30:53 on Mar 21,2026
+# vlog -reportprogress 300 step_counter.v 
+# -- Compiling module step_counter
+# 
+# Top level modules:
+# 	step_counter
+# End time: 23:30:53 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:30:53 on Mar 21,2026
+# vlog -reportprogress 300 fsm_pan.v 
+# -- Compiling module fsm_pan
+# 
+# Top level modules:
+# 	fsm_pan
+# End time: 23:30:53 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:30:53 on Mar 21,2026
+# vlog -reportprogress 300 pan_top.v 
+# -- Compiling module pan_top
+# 
+# Top level modules:
+# 	pan_top
+# End time: 23:30:53 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:30:53 on Mar 21,2026
+# vlog -reportprogress 300 tb_pan.v 
+# -- Compiling module tb_pan
+# 
+# Top level modules:
+# 	tb_pan
+# End time: 23:30:53 on Mar 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -t 1ns work.tb_pan 
+# Start time: 23:30:53 on Mar 21,2026
+# Loading work.tb_pan
+# Loading work.pan_top
+# Loading work.clk_divider
+# Loading work.fsm_pan
+# Loading work.step_counter
+# Loading work.stepper_driver
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: Administrator  Hostname: DUCTOAN  ProcessID: 23124
+#           Attempting to use alternate WLF file "./wlftg58tvs".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlftg58tvs
+# ====================================================
+#   MO PHONG: Multi-angle Stepper Pan Controller
+#   25 buoc = 45 do | 50 buoc = 90 do
+#   100 buoc = 180 do | 200 buoc = 360 do
+# ====================================================
+# 
+# --- TC1: Reset co ban ---
+# [PASS] TC1: motor=1000 en=0
+# 
+# --- TC2: Quay 45 do (angle=001) ---
+# [PASS] TC2: Quay 45 do xong. motor=0110
+# 
+# --- TC3: Quay 90 do (angle=010) ---
+# [PASS] TC3: Quay 90 do xong. motor=0010
+# 
+# --- TC4: Quay 180 do (angle=100) ---
+# [PASS] TC4: Quay 180 do xong. motor=0001
+# 
+# --- TC5: Quay 360 do (angle=111) ---
+# [PASS] TC5: Quay 360 do xong. motor=0100
+# 
+# --- TC6: 0->45 roi doi WAIT delay, tiep 45->90 ---
+# [PASS] TC6: 2x45 do thanh cong, co delay giua. motor=0001
+# 
+# --- TC7: Lan 1: 45 do, lan 2: 180 do ---
+# [PASS] TC7: Doi angle giua 2 lan OK. motor=1100
+# 
+# --- TC8: Reset giua chung khi dang quay 180 do ---
+# [PASS] TC8: Reset giua chung OK. motor=1000 en=0
+# 
+# ====================================================
+#   KET QUA: 8 / 8 test case PASS
+# ====================================================
+# 
+# 0 ns
+# 2625 us
+quit -sim
+# End time: 23:32:38 on Mar 21,2026, Elapsed time: 0:01:45
+# Errors: 0, Warnings: 3
