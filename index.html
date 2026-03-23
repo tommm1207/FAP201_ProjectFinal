@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pan Camera FSM — FAP201 IC2014</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f4f1eb;color:#2c2820;font-family:'JetBrains Mono',monospace;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none}
+
+/* ── TOP BAR ── */
+#topbar{background:#ffffff;border-bottom:1px solid #ddd9ce;padding:0 20px;height:46px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#topbar .title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;letter-spacing:.14em;color:#c8973a}
+#topbar .sub{font-size:10px;color:#8a8070;letter-spacing:.1em}
+
+/* ── BODY ── */
+#body{display:flex;flex:1;overflow:hidden;gap:0}
+
+/* ── SCENE (left) ── */
+#scene-wrap{flex:1;position:relative;overflow:hidden;background:#f4f1eb}
+#scene{width:100%;height:100%;display:block}
+
+/* ── RIGHT PANEL ── */
+#panel{width:300px;background:#ffffff;border-left:1px solid #ddd9ce;display:flex;flex-direction:column;flex-shrink:0}
+.pane-title{font-size:9px;color:#a09880;letter-spacing:.14em;padding:10px 14px 4px;text-transform:uppercase}
+
+/* FSM canvas */
+#fsm-cv{display:block;width:100%;height:230px}
+
+/* Info grid */
+#info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#ddd9ce;border-top:1px solid #ddd9ce;border-bottom:1px solid #ddd9ce}
+.info-cell{background:#ffffff;padding:8px 12px}
+.info-cell .k{font-size:9px;color:#a09880;letter-spacing:.08em;margin-bottom:3px}
+.info-cell .v{font-size:13px;font-weight:700;transition:color .2s}
+
+/* Log */
+#log{flex:1;overflow-y:auto;padding:8px 12px;font-size:9.5px;line-height:1.7;display:flex;flex-direction:column;gap:0}
+#log::-webkit-scrollbar{width:3px}#log::-webkit-scrollbar-thumb{background:#ddd9ce}
+
+/* ── BOTTOM BAR ── */
+#bottom{background:#ffffff;border-top:1px solid #ddd9ce;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;flex-wrap:wrap}
+
+/* Angle buttons */
+.angle-group{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.abtn{background:#f9f6f0;border:1px solid #ddd9ce;color:#8a8070;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;transition:all .15s}
+.abtn:hover{border-color:#c8973a;color:#c8973a}
+.abtn.on{background:#c8973a;color:#000;border-color:#c8973a}
+
+/* Custom angle input */
+.custom-angle-wrap{display:flex;align-items:center;gap:5px;margin-left:4px}
+.custom-angle-wrap label{font-size:10px;color:#8a8070;letter-spacing:.06em}
+.custom-angle-input{
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+  width:64px;padding:5px 8px;border-radius:6px;
+  border:1px solid #ddd9ce;background:#f9f6f0;color:#2c2820;
+  outline:none;transition:border-color .15s;text-align:center
+}
+.custom-angle-input:focus{border-color:#c8973a}
+.custom-angle-input.invalid{border-color:#e55;color:#e55}
+.abtn-custom{background:#f9f6f0;border:1px solid #c8973a;color:#c8973a;
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+  padding:5px 10px;border-radius:6px;cursor:pointer;transition:all .15s}
+.abtn-custom:hover{background:#c8973a;color:#000}
+.abtn-custom.on{background:#c8973a;color:#000}
+
+/* Action buttons */
+.act{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:6px 16px;border-radius:7px;cursor:pointer;border:1px solid;transition:all .15s;letter-spacing:.04em}
+#btn-go{background:#0F6E56;color:#fff;border-color:#0F6E56}
+#btn-go:hover{background:#1a9070}
+#btn-go.flash{background:#fff;color:#0F6E56}
+#btn-go:disabled{background:#ddd9ce;color:#8a8070;border-color:#ddd9ce;cursor:not-allowed}
+#btn-rst{background:transparent;color:#e55;border-color:#e55}
+#btn-rst:hover{background:#e55;color:#fff}
+
+/* Speed */
+.spd-wrap{display:flex;align-items:center;gap:7px;font-size:10px;color:#8a8070;margin-left:auto}
+.spd-wrap input{accent-color:#c8973a;width:80px;cursor:pointer}
+.spd-lbl{color:#c8973a;font-weight:700;min-width:28px}
+
+.sep{width:1px;height:24px;background:#ddd9ce}
+</style>
+</head>
+<body>
+
+<!-- TOP -->
+<div id="topbar">
+  <span class="title">PAN CAMERA FSM SIMULATOR</span>
+  <span class="sub">FAP201 · IC2014 · FPT University · IDLE/RUN/DONE/WAIT</span>
+</div>
+
+<!-- MAIN -->
+<div id="body">
+  <div id="scene-wrap"><canvas id="scene"></canvas></div>
+
+  <div id="panel">
+    <div class="pane-title">FSM State Diagram</div>
+    <canvas id="fsm-cv"></canvas>
+
+    <div class="pane-title">Live Signals</div>
+    <div id="info-grid">
+      <div class="info-cell"><div class="k">STATE</div><div class="v" id="i-state" style="color:#185FA5">IDLE</div></div>
+      <div class="info-cell"><div class="k">en (output)</div><div class="v" id="i-en" style="color:#a09880">0</div></div>
+      <div class="info-cell"><div class="k">step / target</div><div class="v" id="i-step">0 / 50</div></div>
+      <div class="info-cell"><div class="k">wait_cnt</div><div class="v" id="i-wait" style="color:#a09880">—</div></div>
+      <div class="info-cell"><div class="k">phases[3:0]</div><div class="v" id="i-phase">1000</div></div>
+      <div class="info-cell"><div class="k">angle rotated</div><div class="v" id="i-ang" style="color:#c8973a">0.0°</div></div>
+    </div>
+
+    <div class="pane-title">Event Log</div>
+    <div id="log"></div>
+  </div>
+</div>
+
+<!-- BOTTOM -->
+<div id="bottom">
+  <div class="angle-group" id="ang-wrap"></div>
+  <div class="custom-angle-wrap">
+    <label>Góc:</label>
+    <input type="number" class="custom-angle-input" id="custom-deg" min="1" max="3600" placeholder="độ" title="Nhập số độ muốn quay (1–3600)">
+    <button class="abtn-custom" id="btn-set-angle" onclick="applyCustomAngle()">✓ SET</button>
+  </div>
+  <div class="sep"></div>
+  <button class="act" id="btn-go" onclick="pressBtn()">▶ PRESS BTN</button>
+  <button class="act" id="btn-rst" onclick="doReset()">↺ RESET</button>
+  <div class="sep"></div>
+  <div class="spd-wrap">
+    <span>Thời gian quay:</span>
+    <input type="number" class="custom-angle-input" id="custom-time" min="0.1" max="300" step="0.1" value="5" title="Thời gian quay (giây)" style="width:62px">
+    <span style="color:#8a8070;font-size:11px">giây</span>
+    <button class="abtn-custom" id="btn-set-time" onclick="applyCustomTime()">✓ SET</button>
+    <span style="color:#a09880;font-size:9px;margin-left:6px" id="spd-sub">step_clk 10Hz</span>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  PALETTE
+// ═══════════════════════════════════════════════════
+const SC  = ['#185FA5','#0F6E56','#854F0B','#534AB7']
+const SL  = ['#E6F1FB','#E1F5EE','#FAEEDA','#EEEDFE']
+const SN  = ['IDLE','RUN','DONE','WAIT']
+const PHASES=[0b1000,0b1100,0b0100,0b0110,0b0010,0b0011,0b0001,0b1001]
+const PL  = ['A','A+B','B','B+C','C','C+D','D','D+A']
+const ASTEPS=[25,50,75,100,125,150,200]
+const ADEG  =[45,90,135,180,225,270,360]
+// Dynamic custom angle (steps = deg/1.8, since 1 step = 1.8°)
+let customDeg=90, customSteps=50   // working values (can be preset or custom)
+let usingCustom=false
+const IDLE=0,RUN=1,DONE=2,WAIT=3
+
+// ═══════════════════════════════════════════════════
+//  FSM MODEL
+// ═══════════════════════════════════════════════════
+let fsm={state:IDLE,wait_cnt:0,en:false,count:0,done:false,seq:0,btn:false,target:50,ticks:0,t:0}
+
+function fsmTick(){
+  const prev=fsm.state
+  if(fsm.en){
+    if(fsm.count<fsm.target){fsm.count++;fsm.done=false;fsm.seq=(fsm.seq+1)&7}
+    else fsm.done=true
+  }else{fsm.count=0;fsm.done=false}
+  switch(fsm.state){
+    case IDLE: if(fsm.btn)fsm.state=RUN; break
+    case RUN:  if(fsm.done)fsm.state=DONE; break
+    case DONE: fsm.state=WAIT;fsm.wait_cnt=0; break
+    case WAIT:
+      if(fsm.wait_cnt===7){fsm.state=IDLE;fsm.wait_cnt=0}
+      else fsm.wait_cnt++
+      break
+  }
+  fsm.en=(fsm.state===RUN)
+  fsm.btn=false
+  fsm.ticks++
+  fsm.t=fsm.ticks/200
+  return fsm.state!==prev
+}
+
+// ═══════════════════════════════════════════════════
+//  SIMULATION STATE
+// ═══════════════════════════════════════════════════
+// Speed: derived from user-input duration
+// hz = steps / seconds  → ticks per second
+let customTimeSec=5        // user-desired rotation duration in seconds
+let _currentHz=10          // computed step_clk frequency
+let angleIdx=1, camAngle=0, targetAngle=0, prevState=IDLE
+
+function _currentDeg(){ return usingCustom ? customDeg : ADEG[angleIdx] }
+function _currentSteps(){ return usingCustom ? customSteps : ASTEPS[angleIdx] }
+
+function _recomputeHz(){
+  const steps=_currentSteps()
+  _currentHz=Math.max(0.5, steps/Math.max(customTimeSec,0.1))
+}
+
+function changeSpeed(delta){ /* legacy no-op */ }
+
+function applyCustomTime(){
+  const inp=document.getElementById('custom-time')
+  const val=parseFloat(inp.value)
+  if(!val||val<0.1||val>300){
+    inp.classList.add('invalid'); inp.focus(); return
+  }
+  inp.classList.remove('invalid')
+  customTimeSec=val
+  _recomputeHz()
+  _updateSpeedLabel()
+  addLog(`Thời gian quay: ${customTimeSec}s → step_clk ${_currentHz.toFixed(2)}Hz`,'#c8973a')
+}
+
+function _updateSpeedLabel(){
+  _recomputeHz()
+  document.getElementById('spd-sub').textContent='step_clk '+_currentHz.toFixed(2)+'Hz'
+}
+
+// ═══════════════════════════════════════════════════
+//  ANGLE BUTTONS + CUSTOM INPUT
+// ═══════════════════════════════════════════════════
+const aw=document.getElementById('ang-wrap')
+ADEG.forEach((d,i)=>{
+  const b=document.createElement('button')
+  b.className='abtn'+(i===1?' on':'')
+  b.textContent=d+'°'
+  b.onclick=()=>setAngle(i)
+  aw.appendChild(b)
+})
+function setAngle(i){
+  angleIdx=i; usingCustom=false
+  fsm.target=ASTEPS[i]
+  document.querySelectorAll('.abtn').forEach((b,j)=>b.classList.toggle('on',j===i))
+  document.getElementById('btn-set-angle').classList.remove('on')
+  document.getElementById('custom-deg').classList.remove('invalid')
+  _updateSpeedLabel()
+}
+
+function applyCustomAngle(){
+  const inp=document.getElementById('custom-deg')
+  const val=parseFloat(inp.value)
+  if(!val || val<1 || val>3600){
+    inp.classList.add('invalid')
+    inp.focus()
+    return
+  }
+  inp.classList.remove('invalid')
+  customDeg=Math.round(val*10)/10
+  customSteps=Math.round(customDeg/1.8)
+  if(customSteps<1) customSteps=1
+  usingCustom=true
+  fsm.target=customSteps
+  // deselect preset buttons
+  document.querySelectorAll('.abtn').forEach(b=>b.classList.remove('on'))
+  document.getElementById('btn-set-angle').classList.add('on')
+  addLog(`Góc tùy chỉnh: ${customDeg}° → ${customSteps} steps`,'#c8973a')
+  _updateSpeedLabel()
+}
+
+// Allow Enter key in custom inputs
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=document.getElementById('custom-deg')
+  if(inp) inp.addEventListener('keydown',e=>{if(e.key==='Enter') applyCustomAngle()})
+  const tinp=document.getElementById('custom-time')
+  if(tinp) tinp.addEventListener('keydown',e=>{if(e.key==='Enter') applyCustomTime()})
+})
+
+setAngle(1)
+
+// ═══════════════════════════════════════════════════
+//  CONTROLS
+// ═══════════════════════════════════════════════════
+function pressBtn(){
+  if(fsm.state!==IDLE){addLog(`BTN ignored — state is ${SN[fsm.state]}`,'#2e3650');return}
+  const deg=_currentDeg(), steps=_currentSteps()
+  fsm.btn=true; fsm.target=steps
+  targetAngle=camAngle+deg
+  addLog(`BTN pressed → target ${deg}° (${steps} steps)`,SC[RUN])
+  const b=document.getElementById('btn-go')
+  b.classList.add('flash'); setTimeout(()=>b.classList.remove('flash'),200)
+}
+function doReset(){
+  fsm={state:IDLE,wait_cnt:0,en:false,count:0,done:false,seq:0,btn:false,target:_currentSteps(),ticks:0,t:0}
+  camAngle=0; targetAngle=0; prevState=IDLE
+  addLog('RESET — camera at 0°, FSM cleared','#c8973a')
+}
+
+// keyboard
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();pressBtn()}
+  if(e.code==='KeyR') doReset()
+  if(e.code==='ArrowLeft') setAngle(Math.max(0,angleIdx-1))
+  if(e.code==='ArrowRight') setAngle(Math.min(ADEG.length-1,angleIdx+1))
+})
+
+// ═══════════════════════════════════════════════════
+//  LOG
+// ═══════════════════════════════════════════════════
+let logCount=0
+function addLog(msg,col='#3a4255'){
+  const el=document.getElementById('log')
+  if(++logCount>100){el.firstChild&&el.removeChild(el.firstChild)}
+  const mm=String(Math.floor(fsm.t/60)).padStart(2,'0')
+  const ss=(fsm.t%60).toFixed(3).padStart(6,'0')
+  const row=document.createElement('div')
+  row.style.cssText=`display:flex;gap:8px;padding:1px 0`
+  row.innerHTML=`<span style="color:#a09880;min-width:68px">${mm}:${ss}</span><span style="color:${col}">${msg}</span>`
+  el.appendChild(row)
+  el.scrollTop=el.scrollHeight
+}
+
+// ═══════════════════════════════════════════════════
+//  CANVAS SETUP
+// ═══════════════════════════════════════════════════
+const sv=document.getElementById('scene')
+const sc=sv.getContext('2d')
+const fv=document.getElementById('fsm-cv')
+const fc=fv.getContext('2d')
+
+function resizeCanvases(){
+  const dpr=devicePixelRatio||1
+  sv.width=sv.offsetWidth*dpr; sv.height=sv.offsetHeight*dpr
+  sc.setTransform(dpr,0,0,dpr,0,0)
+  fv.width=fv.offsetWidth*dpr; fv.height=fv.offsetHeight*dpr
+  fc.setTransform(dpr,0,0,dpr,0,0)
+}
+resizeCanvases()
+window.addEventListener('resize',resizeCanvases)
+
+// ═══════════════════════════════════════════════════
+//  SCENE DRAWING
+// ═══════════════════════════════════════════════════
+function drawScene(){
+  const W=sv.offsetWidth, H=sv.offsetHeight
+  sc.clearRect(0,0,W,H)
+
+  const col=SC[fsm.state]
+  const GROUND=H*0.65
+  const CX=W*0.5
+  const POLE_TOP=H*0.10
+
+  // ── Sky gradient ──
+  const sky=sc.createLinearGradient(0,0,0,GROUND)
+  sky.addColorStop(0,'#eceae4')
+  sky.addColorStop(1,'#f0ede6')
+  sc.fillStyle=sky; sc.fillRect(0,0,W,GROUND)
+
+  // grid
+  sc.strokeStyle='rgba(255,255,255,0.025)'; sc.lineWidth=1
+  for(let x=0;x<W;x+=40){sc.beginPath();sc.moveTo(x,0);sc.lineTo(x,GROUND);sc.stroke()}
+  for(let y=0;y<GROUND;y+=40){sc.beginPath();sc.moveTo(0,y);sc.lineTo(W,y);sc.stroke()}
+
+  // ── Floor ──
+  const floor=sc.createLinearGradient(0,GROUND,0,H)
+  floor.addColorStop(0,'#e8e4d8'); floor.addColorStop(1,'#f4f1eb')
+  sc.fillStyle=floor; sc.fillRect(0,GROUND,W,H)
+  sc.fillStyle='#d8d4c8'; sc.fillRect(0,GROUND,W,3)
+
+  // Floor grid
+  sc.strokeStyle='rgba(255,255,255,0.04)'; sc.lineWidth=1
+  for(let x=0;x<W;x+=60) for(let y=GROUND;y<H;y+=30){
+    sc.beginPath();sc.moveTo(x,y);sc.lineTo(x,y+30);sc.stroke()
+    sc.beginPath();sc.moveTo(0,y);sc.lineTo(W,y);sc.stroke()
+  }
+
+  // ── Angle arc on floor (semicircle, perspective) ──
+  const ARC_R=Math.min(W,H)*0.28
+  const ARC_CX=CX, ARC_CY=GROUND
+
+  // track arc
+  sc.beginPath()
+  sc.ellipse(ARC_CX,ARC_CY,ARC_R,ARC_R*0.22,0,Math.PI,0,true)
+  sc.strokeStyle='#ccc8bc'; sc.lineWidth=2; sc.stroke()
+
+  // filled progress arc
+  if(camAngle>0.01){
+    const startR=Math.PI
+    const endR=Math.PI-Math.min(camAngle,360)/180*Math.PI
+    sc.beginPath()
+    sc.ellipse(ARC_CX,ARC_CY,ARC_R,ARC_R*0.22,0,startR,endR,true)
+    sc.strokeStyle=col+'99'; sc.lineWidth=4; sc.stroke()
+  }
+
+  // angle tick marks & labels: 0°,45°,90°,135°,180°
+  for(let a=0;a<=180;a+=45){
+    const rad=Math.PI-a/180*Math.PI
+    const tx=ARC_CX+ARC_R*Math.cos(rad)
+    const ty=ARC_CY-ARC_R*0.22*Math.sin(rad)
+    // shadow dot
+    sc.beginPath(); sc.arc(tx,ty,4,0,Math.PI*2)
+    sc.fillStyle=(a===0||a===180)?'#2a3450':'#ddd9ce'; sc.fill()
+
+    // line from arc center to tick
+    const ix=ARC_CX+(ARC_R-18)*Math.cos(rad)
+    const iy=ARC_CY-(ARC_R-18)*0.22*Math.sin(rad)
+    sc.beginPath(); sc.moveTo(ix,iy); sc.lineTo(tx,ty)
+    sc.strokeStyle='#ccc8bc'; sc.lineWidth=1.5; sc.stroke()
+
+    // label
+    const lx=ARC_CX+(ARC_R+22)*Math.cos(rad)
+    const ly=ARC_CY-(ARC_R+22)*0.22*Math.sin(rad)+4
+    sc.fillStyle='#8090a0'; sc.font='bold 10px JetBrains Mono'
+    sc.textAlign='center'; sc.textBaseline='middle'
+    sc.fillText(a+'°',lx,ly)
+  }
+
+  // shadow of arm on floor
+  const sSin=Math.sin(camAngle/180*Math.PI)
+  const sCos=Math.cos(camAngle/180*Math.PI)
+  const sLen=ARC_R*0.9
+  sc.beginPath()
+  sc.moveTo(ARC_CX,ARC_CY)
+  sc.lineTo(ARC_CX+sCos*sLen,ARC_CY)
+  sc.strokeStyle='rgba(0,0,0,0.4)'; sc.lineWidth=6
+  sc.lineCap='round'; sc.stroke(); sc.lineCap='butt'
+
+  // ── Pole ──
+  const poleW=10
+  // pole glow
+  if(fsm.en){
+    sc.save(); sc.globalAlpha=0.12
+    sc.fillStyle=col
+    sc.fillRect(CX-20,POLE_TOP-10,40,GROUND-POLE_TOP+10)
+    sc.restore()
+  }
+  // pole body
+  const poleGrad=sc.createLinearGradient(CX-poleW/2,0,CX+poleW/2,0)
+  poleGrad.addColorStop(0,'#c8c4b8'); poleGrad.addColorStop(0.4,'#b8b4a8')
+  poleGrad.addColorStop(1,'#ddd9ce')
+  sc.fillStyle=poleGrad
+  sc.fillRect(CX-poleW/2,POLE_TOP,poleW,GROUND-POLE_TOP)
+  // pole highlight
+  sc.fillStyle='rgba(0,0,0,0.04)'
+  sc.fillRect(CX-poleW/2,POLE_TOP,2,GROUND-POLE_TOP)
+  // base
+  sc.fillStyle='#c8c4b8'
+  sc.beginPath(); sc.roundRect(CX-28,GROUND-8,56,16,4); sc.fill()
+
+  // ── Pivot / Motor ring ──
+  const PVX=CX, PVY=POLE_TOP+50
+  sc.beginPath(); sc.arc(PVX,PVY,22,0,Math.PI*2)
+  sc.fillStyle='#f0ece2'; sc.fill()
+  sc.strokeStyle=col; sc.lineWidth=2.5; sc.stroke()
+  // rotation progress ring
+  if(fsm.count>0){
+    const prog=fsm.count/Math.max(fsm.target,1)*Math.PI*2
+    sc.beginPath(); sc.arc(PVX,PVY,22,-Math.PI/2,-Math.PI/2+prog)
+    sc.strokeStyle=col; sc.lineWidth=4; sc.stroke()
+  }
+  // center dot
+  sc.beginPath(); sc.arc(PVX,PVY,6,0,Math.PI*2)
+  sc.fillStyle=fsm.en?col:'#c8c4b8'; sc.fill()
+  // seq label
+  sc.fillStyle='#8a8070'; sc.font='9px JetBrains Mono'
+  sc.textAlign='center'; sc.textBaseline='top'
+  sc.fillText('seq='+fsm.seq,PVX,PVY+26)
+
+  // ── Camera arm ──
+  // Arm rotates horizontally: at 0° points left, at 180° right
+  // perspective: arm end X = CX + cos(angle_rad)*armLen, Y stays at pivot
+  const ARM_LEN=110
+  const armRad=camAngle/180*Math.PI
+  const armEndX=PVX+Math.cos(armRad)*ARM_LEN
+  const armEndY=PVY // stays level in 2D top view projected
+
+  // arm shadow on pole
+  sc.beginPath(); sc.moveTo(PVX,PVY+5); sc.lineTo(armEndX,armEndY+5)
+  sc.strokeStyle='rgba(0,0,0,0.35)'; sc.lineWidth=8; sc.lineCap='round'; sc.stroke()
+
+  // arm body
+  const armGrad=sc.createLinearGradient(PVX,PVY,armEndX,armEndY)
+  armGrad.addColorStop(0, fsm.en?col:'#c8c4b8')
+  armGrad.addColorStop(1, fsm.en?col+'88':'#ddd9ce')
+  sc.beginPath(); sc.moveTo(PVX,PVY); sc.lineTo(armEndX,armEndY)
+  sc.strokeStyle=armGrad; sc.lineWidth=6; sc.lineCap='round'; sc.stroke()
+  sc.lineCap='butt'
+
+  // ── Camera head ──
+  drawCamera(sc,armEndX,armEndY,camAngle,col,fsm.en)
+
+  // ── Angle readout (center bottom of scene) ──
+  const dispDeg=(camAngle%360).toFixed(1)
+  sc.textAlign='center'; sc.textBaseline='middle'
+  sc.font='bold 32px JetBrains Mono'
+  sc.fillStyle=fsm.en?col:'#2a3050'
+  sc.fillText(dispDeg+'°',CX,GROUND+H*0.15)
+  sc.font='11px JetBrains Mono'
+  sc.fillStyle='#8a8070'
+  const statusTxt=fsm.en?'ROTATING →':(fsm.state===WAIT?'COOLING DOWN...':SN[fsm.state])
+  sc.fillText(statusTxt+'   step '+fsm.count+'/'+fsm.target,CX,GROUND+H*0.15+30)
+
+  // ── Phase coils strip ──
+  const phaseVal=PHASES[fsm.seq]
+  const coilNames=['A','B','C','D']
+  const px0=CX-66, py0=GROUND+H*0.15+52
+  for(let b=0;b<4;b++){
+    const bx=px0+b*34
+    const lit=(phaseVal>>(3-b))&1
+    sc.fillStyle=lit?col:'#f0ece2'
+    sc.strokeStyle=lit?col:'#ddd9ce'
+    sc.lineWidth=1.5
+    sc.beginPath(); sc.roundRect(bx,py0,26,26,5); sc.fill(); sc.stroke()
+    if(lit){sc.save();sc.globalAlpha=0.25;sc.beginPath();sc.roundRect(bx-4,py0-4,34,34,8);sc.fillStyle=col;sc.fill();sc.restore()}
+    sc.fillStyle=lit?'#fff':'#3a4255'
+    sc.font='bold 11px JetBrains Mono'
+    sc.textAlign='center'; sc.textBaseline='middle'
+    sc.fillText(coilNames[b],bx+13,py0+13)
+  }
+  sc.fillStyle='#9090a0'; sc.font='9px JetBrains Mono'
+  sc.textAlign='left'; sc.textBaseline='top'
+  sc.fillText('phases='+phaseVal.toString(2).padStart(4,'0')+'  ('+PL[fsm.seq]+')',px0,py0+32)
+
+  // WAIT overlay
+  if(fsm.state===WAIT){
+    sc.save(); sc.globalAlpha=0.06
+    sc.fillStyle=SC[WAIT]; sc.fillRect(0,0,W,H)
+    sc.restore()
+    sc.fillStyle=SC[WAIT]; sc.font='bold 11px JetBrains Mono'
+    sc.textAlign='center'; sc.textBaseline='top'
+    sc.fillText('WAIT '+fsm.wait_cnt+'/7 — cooling down',CX,POLE_TOP)
+  }
+}
+
+function drawCamera(ctx,cx,cy,angleDeg,col,en){
+  // perspective foreshortening
+  const persp=Math.abs(Math.cos(angleDeg/180*Math.PI))
+  const bw=Math.max(20,Math.round(44*Math.max(persp,0.2)))
+  const bh=28
+
+  // body shadow
+  ctx.save(); ctx.globalAlpha=0.3
+  ctx.fillStyle='#000'
+  ctx.beginPath(); ctx.roundRect(cx-bw/2+3,cy-bh/2+4,bw,bh,6); ctx.fill()
+  ctx.restore()
+
+  // body
+  ctx.fillStyle='#eeeae0'
+  ctx.strokeStyle=en?col:'#c8c4b8'
+  ctx.lineWidth=2
+  ctx.beginPath(); ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,6); ctx.fill(); ctx.stroke()
+
+  // detail lines on body
+  ctx.strokeStyle=en?col+'44':'#ddd9ce'; ctx.lineWidth=1
+  ctx.beginPath(); ctx.moveTo(cx-bw/2+4,cy-bh/2+4); ctx.lineTo(cx+bw/2-4,cy-bh/2+4); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(cx-bw/2+4,cy+bh/2-4); ctx.lineTo(cx+bw/2-4,cy+bh/2-4); ctx.stroke()
+
+  // Lens — placed at front of camera (direction it's facing)
+  const lensOffset=Math.cos(angleDeg/180*Math.PI)*(bw*0.32)
+  const lx=cx+lensOffset
+  const lr=Math.max(6,Math.round(11*Math.max(persp,0.3)))
+
+  // lens glow when running
+  if(en&&lr>6){
+    ctx.save(); ctx.globalAlpha=0.2
+    ctx.beginPath(); ctx.arc(lx,cy,lr+8,0,Math.PI*2)
+    ctx.fillStyle=col; ctx.fill()
+    ctx.restore()
+  }
+  // lens body
+  ctx.beginPath(); ctx.arc(lx,cy,lr,0,Math.PI*2)
+  ctx.fillStyle='#dde2ea'
+  ctx.strokeStyle=en?col:'#c8c4b8'; ctx.lineWidth=2
+  ctx.fill(); ctx.stroke()
+  // lens glass
+  if(lr>5){
+    ctx.beginPath(); ctx.arc(lx,cy,lr-2,0,Math.PI*2)
+    ctx.fillStyle='#ccd5e0'; ctx.fill()
+    // glint
+    ctx.beginPath(); ctx.arc(lx-lr*0.3,cy-lr*0.3,lr*0.2,0,Math.PI*2)
+    ctx.fillStyle='#a0b8d0'; ctx.fill()
+  }
+
+  // view cone
+  if(en&&lr>6){
+    const coneLen=80*persp
+    const coneSpread=22
+    const coneDir=angleDeg/180*Math.PI
+    ctx.save(); ctx.globalAlpha=0.12
+    ctx.fillStyle=col
+    ctx.beginPath()
+    ctx.moveTo(lx,cy)
+    ctx.lineTo(lx+Math.cos(coneDir)*coneLen, cy-coneSpread)
+    ctx.lineTo(lx+Math.cos(coneDir)*coneLen, cy+coneSpread)
+    ctx.closePath(); ctx.fill()
+    ctx.restore()
+  }
+
+  // recording LED
+  ctx.beginPath(); ctx.arc(cx+bw/2-5, cy-bh/2+5, 3.5, 0, Math.PI*2)
+  ctx.fillStyle=en?'#ff2020':'#e8d0d0'; ctx.fill()
+  if(en){
+    ctx.save(); ctx.globalAlpha=0.4+(Math.sin(Date.now()/300)*0.3)
+    ctx.beginPath(); ctx.arc(cx+bw/2-5,cy-bh/2+5,7,0,Math.PI*2)
+    ctx.fillStyle='#ff2020'; ctx.fill()
+    ctx.restore()
+  }
+
+  // label
+  ctx.fillStyle=en?col:'#2a3050'
+  ctx.font='bold 8px JetBrains Mono'
+  ctx.textAlign='center'; ctx.textBaseline='top'
+  ctx.fillText('CAM-1',cx,cy+bh/2+4)
+}
+
+// ═══════════════════════════════════════════════════
+//  FSM PANEL DRAWING
+// ═══════════════════════════════════════════════════
+function drawFSMPanel(){
+  const W=fv.offsetWidth, H=fv.offsetHeight
+  fc.clearRect(0,0,W,H)
+  fc.fillStyle='#ffffff'; fc.fillRect(0,0,W,H)
+
+  const BW=130,BH=34,GAP=12
+  const TOTAL=4*BH+3*GAP
+  const SY=(H-TOTAL)/2
+  const BX=W*0.28
+
+  for(let i=0;i<4;i++){
+    const y=SY+i*(BH+GAP)
+    const active=fsm.state===i
+    const col=SC[i]
+
+    // connector
+    if(i<3){
+      fc.beginPath(); fc.moveTo(BX,y+BH); fc.lineTo(BX,y+BH+GAP)
+      fc.strokeStyle='#ccc8bc'; fc.lineWidth=1.5; fc.stroke()
+      // arrow
+      fc.beginPath()
+      fc.moveTo(BX-4,y+BH+GAP-6); fc.lineTo(BX,y+BH+GAP)
+      fc.lineTo(BX+4,y+BH+GAP-6)
+      fc.strokeStyle='#ccc8bc'; fc.lineWidth=1; fc.stroke()
+    }
+
+    // glow
+    if(active){
+      fc.save(); fc.globalAlpha=0.15
+      fc.beginPath(); fc.roundRect(BX-BW/2-6,y-6,BW+12,BH+12,8)
+      fc.fillStyle=col; fc.fill()
+      fc.restore()
+    }
+
+    // box
+    fc.fillStyle=active?col:'#f0ece2'
+    fc.strokeStyle=active?col:'#ddd9ce'
+    fc.lineWidth=active?2:1
+    fc.beginPath(); fc.roundRect(BX-BW/2,y,BW,BH,6); fc.fill(); fc.stroke()
+
+    // pointer
+    if(active){
+      fc.fillStyle=col; fc.font='bold 11px JetBrains Mono'
+      fc.textAlign='right'; fc.textBaseline='middle'
+      fc.fillText('►',BX-BW/2-8,y+BH/2)
+    }
+
+    // label
+    fc.fillStyle=active?'#fff':'#2e3650'
+    fc.font='bold 11px JetBrains Mono'
+    fc.textAlign='center'; fc.textBaseline='middle'
+    fc.fillText(SN[i],BX,y+BH/2-5)
+    fc.fillStyle=active?(i===RUN?'#aaffcc':'#aabbcc'):'#ddd9ce'
+    fc.font='8px JetBrains Mono'
+    fc.fillText(i===RUN?'en = 1':'en = 0',BX,y+BH/2+7)
+
+    // wait_cnt
+    if(i===WAIT&&active){
+      fc.fillStyle=SC[WAIT]; fc.font='bold 10px JetBrains Mono'
+      fc.textAlign='left'
+      fc.fillText(fsm.wait_cnt+'/7',BX+BW/2+6,y+BH/2)
+    }
+
+    // condition labels (right)
+    const conds=['btn=1','done=1','auto','wait_cnt=7']
+    if(i<3){
+      fc.fillStyle=SC[i]; fc.font='italic 8.5px JetBrains Mono'
+      fc.textAlign='left'; fc.textBaseline='middle'
+      fc.fillText(conds[i], BX+BW/2+8, y+BH+GAP/2)
+    }
+  }
+
+  // ── Phase display (top right) ──
+  const phaseVal=PHASES[fsm.seq]
+  const pcx=W*0.82, pcy=SY
+  fc.fillStyle='#a09880'; fc.font='8px JetBrains Mono'; fc.textAlign='center'
+  fc.textBaseline='bottom'; fc.fillText('PHASE',pcx,pcy-4)
+  const cn=['A','B','C','D']
+  for(let b=0;b<4;b++){
+    const bx=pcx-22+b*14, by=pcy
+    const lit=(phaseVal>>(3-b))&1
+    fc.fillStyle=lit?SC[fsm.state]:'#f0ece2'
+    fc.strokeStyle=lit?SC[fsm.state]:'#ddd9ce'; fc.lineWidth=1
+    fc.beginPath(); fc.roundRect(bx,by,12,14,2); fc.fill(); fc.stroke()
+    fc.fillStyle=lit?'#fff':'#2e3650'
+    fc.font='bold 7px JetBrains Mono'; fc.textAlign='center'; fc.textBaseline='middle'
+    fc.fillText(cn[b],bx+6,by+7)
+  }
+  fc.fillStyle=SC[fsm.state]; fc.font='bold 10px JetBrains Mono'; fc.textAlign='center'
+  fc.textBaseline='top'; fc.fillText(PL[fsm.seq],pcx,pcy+18)
+  fc.fillStyle='#a09880'; fc.font='8px JetBrains Mono'; fc.fillText('seq='+fsm.seq,pcx,pcy+32)
+
+  // ── sim time bottom right ──
+  fc.fillStyle='#ddd9ce'; fc.font='8px JetBrains Mono'
+  fc.textAlign='right'; fc.textBaseline='bottom'
+  fc.fillText('t='+fsm.t.toFixed(3)+'s',W-10,H-8)
+}
+
+// ═══════════════════════════════════════════════════
+//  INFO UPDATE
+// ═══════════════════════════════════════════════════
+function updateInfo(){
+  const col=SC[fsm.state]
+  document.getElementById('i-state').textContent=SN[fsm.state]
+  document.getElementById('i-state').style.color=col
+  document.getElementById('i-en').textContent=fsm.en?'1  ← ON':'0'
+  document.getElementById('i-en').style.color=fsm.en?SC[RUN]:'#2e3650'
+  document.getElementById('i-step').textContent=fsm.count+' / '+fsm.target
+  document.getElementById('i-step').style.color=col
+  document.getElementById('i-wait').textContent=fsm.state===WAIT?fsm.wait_cnt+'/7':'—'
+  document.getElementById('i-wait').style.color=fsm.state===WAIT?SC[WAIT]:'#2e3650'
+  document.getElementById('i-phase').textContent=
+    PHASES[fsm.seq].toString(2).padStart(4,'0')+'  '+PL[fsm.seq]
+  document.getElementById('i-phase').style.color=col
+  document.getElementById('i-ang').textContent=(fsm.count*1.8).toFixed(1)+'°'
+
+  // disable BTN if not IDLE
+  const gb=document.getElementById('btn-go')
+  gb.disabled=(fsm.state!==IDLE)
+}
+
+// ═══════════════════════════════════════════════════
+//  MAIN LOOP
+// ═══════════════════════════════════════════════════
+let lastTs=0, accum=0
+
+function loop(ts){
+  if(!lastTs)lastTs=ts
+  const real=Math.min((ts-lastTs)/1000,0.1)
+  lastTs=ts
+  _recomputeHz()
+  const STEP_DT=1/_currentHz
+  accum+=real
+
+  // Run FSM ticks
+  while(accum>=STEP_DT){
+    const prev=fsm.state
+    fsmTick()
+    accum-=STEP_DT
+
+    // Log transitions
+    if(fsm.state!==prev){
+      if(fsm.state===RUN)   addLog('IDLE → RUN    target='+fsm.target+' steps  ('+_currentDeg()+'°)',SC[RUN])
+      if(fsm.state===DONE)  addLog('RUN  → DONE   completed '+fsm.count+' steps = '+(fsm.count*1.8).toFixed(1)+'°',SC[DONE])
+      if(fsm.state===WAIT)  addLog('DONE → WAIT   (8-cycle cooldown)',SC[WAIT])
+      if(fsm.state===IDLE)  addLog('WAIT → IDLE   ✓ ready for next command',SC[IDLE])
+    }
+  }
+
+  // Smooth camera angle — follows step count exactly
+  if(fsm.state===RUN||fsm.state===DONE){
+    const deg=_currentDeg()
+    const prog=fsm.count/Math.max(fsm.target,1)
+    camAngle=targetAngle-deg+deg*prog
+  }
+
+  drawScene()
+  drawFSMPanel()
+  updateInfo()
+  requestAnimationFrame(loop)
+}
+
+_updateSpeedLabel()
+addLog('System initialized — Pan Camera FSM ready','#c8973a')
+requestAnimationFrame(loop)
+</script>
+</body>
+</html>
