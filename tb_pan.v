@@ -1,17 +1,3 @@
-// ============================================================
-//  tb_pan.v – Verilog-2001, tuong thich ModelSim ASE 2020.1
-//
-//  TIMING:
-//    clk      = 10 ns (100 MHz)
-//    DIV=50   -> step_clk toggle sau 500 ns -> chu ky 1000 ns
-//    FSM + counter chay tren step_clk
-//    1 vong quay 45 do (25 step_clk) = 25 us
-//    1 vong quay 360 do (200 step_clk) = 200 us
-//
-//  GIU BTN CAO:  200 chu ky clk = 2 us ~ 2 step_clk (dam bao FSM doc duoc)
-//  CHO EN LEN:   toi da 2000 chu ky clk = 20 us
-//  CHO EN XUONG: toi da 25000 chu ky clk = 250 us (du cho 360 do)
-// ============================================================
 `timescale 1ns/1ps
 
 module tb_pan;
