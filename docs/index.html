@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pan Camera FSM Simulator</title>
+<title>Pan Camera FSM — FAP201 IC2014</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -42,10 +42,27 @@ body{background:#f4f1eb;color:#2c2820;font-family:'JetBrains Mono',monospace;hei
 #bottom{background:#ffffff;border-top:1px solid #ddd9ce;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;flex-wrap:wrap}
 
 /* Angle buttons */
-.angle-group{display:flex;gap:4px}
+.angle-group{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .abtn{background:#f9f6f0;border:1px solid #ddd9ce;color:#8a8070;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;transition:all .15s}
 .abtn:hover{border-color:#c8973a;color:#c8973a}
 .abtn.on{background:#c8973a;color:#000;border-color:#c8973a}
+
+/* Custom angle input */
+.custom-angle-wrap{display:flex;align-items:center;gap:5px;margin-left:4px}
+.custom-angle-wrap label{font-size:10px;color:#8a8070;letter-spacing:.06em}
+.custom-angle-input{
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+  width:64px;padding:5px 8px;border-radius:6px;
+  border:1px solid #ddd9ce;background:#f9f6f0;color:#2c2820;
+  outline:none;transition:border-color .15s;text-align:center
+}
+.custom-angle-input:focus{border-color:#c8973a}
+.custom-angle-input.invalid{border-color:#e55;color:#e55}
+.abtn-custom{background:#f9f6f0;border:1px solid #c8973a;color:#c8973a;
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+  padding:5px 10px;border-radius:6px;cursor:pointer;transition:all .15s}
+.abtn-custom:hover{background:#c8973a;color:#000}
+.abtn-custom.on{background:#c8973a;color:#000}
 
 /* Action buttons */
 .act{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:6px 16px;border-radius:7px;cursor:pointer;border:1px solid;transition:all .15s;letter-spacing:.04em}
@@ -69,7 +86,7 @@ body{background:#f4f1eb;color:#2c2820;font-family:'JetBrains Mono',monospace;hei
 <!-- TOP -->
 <div id="topbar">
   <span class="title">PAN CAMERA FSM SIMULATOR</span>
-  <span class="sub">GROUP 4 · IC2014 · FAP201 · FPT University · PAN CAMERA FSM SIMULATOR</span>
+  <span class="sub">FAP201 · IC2014 · FPT University · IDLE/RUN/DONE/WAIT</span>
 </div>
 
 <!-- MAIN -->
@@ -98,16 +115,21 @@ body{background:#f4f1eb;color:#2c2820;font-family:'JetBrains Mono',monospace;hei
 <!-- BOTTOM -->
 <div id="bottom">
   <div class="angle-group" id="ang-wrap"></div>
+  <div class="custom-angle-wrap">
+    <label>Góc:</label>
+    <input type="number" class="custom-angle-input" id="custom-deg" min="1" max="3600" placeholder="độ" title="Nhập số độ muốn quay (1–3600)">
+    <button class="abtn-custom" id="btn-set-angle" onclick="applyCustomAngle()">✓ SET</button>
+  </div>
   <div class="sep"></div>
   <button class="act" id="btn-go" onclick="pressBtn()">▶ PRESS BTN</button>
   <button class="act" id="btn-rst" onclick="doReset()">↺ RESET</button>
   <div class="sep"></div>
   <div class="spd-wrap">
-    <span>Tốc độ quay</span>
-    <button class="act" id="btn-slower" onclick="changeSpeed(-1)" style="padding:4px 10px;font-size:12px">－</button>
-    <span class="spd-lbl" id="spd-lbl" style="min-width:80px;text-align:center">45° / 5s</span>
-    <button class="act" id="btn-faster" onclick="changeSpeed(+1)" style="padding:4px 10px;font-size:12px">＋</button>
-    <span style="color:#a09880;font-size:9px;margin-left:4px" id="spd-sub">step_clk 10Hz</span>
+    <span>Thời gian quay:</span>
+    <input type="number" class="custom-angle-input" id="custom-time" min="0.1" max="300" step="0.1" value="5" title="Thời gian quay (giây)" style="width:62px">
+    <span style="color:#8a8070;font-size:11px">giây</span>
+    <button class="abtn-custom" id="btn-set-time" onclick="applyCustomTime()">✓ SET</button>
+    <span style="color:#a09880;font-size:9px;margin-left:6px" id="spd-sub">step_clk 10Hz</span>
   </div>
 </div>
 
@@ -122,6 +144,9 @@ const PHASES=[0b1000,0b1100,0b0100,0b0110,0b0010,0b0011,0b0001,0b1001]
 const PL  = ['A','A+B','B','B+C','C','C+D','D','D+A']
 const ASTEPS=[25,50,75,100,125,150,200]
 const ADEG  =[45,90,135,180,225,270,360]
+// Dynamic custom angle (steps = deg/1.8, since 1 step = 1.8°)
+let customDeg=90, customSteps=50   // working values (can be preset or custom)
+let usingCustom=false
 const IDLE=0,RUN=1,DONE=2,WAIT=3
 
 // ═══════════════════════════════════════════════════
@@ -154,33 +179,42 @@ function fsmTick(){
 // ═══════════════════════════════════════════════════
 //  SIMULATION STATE
 // ═══════════════════════════════════════════════════
-// Speed: index into preset table
-// Each preset = step_clk frequency (Hz) → how many FSM ticks per second
-const SPEED_PRESETS=[
-  {hz:2,   label:'1× (siêu chậm)'},
-  {hz:5,   label:'2× (chậm)'},
-  {hz:10,  label:'3× (bình thường)'},
-  {hz:25,  label:'4× (nhanh)'},
-  {hz:50,  label:'5× (rất nhanh)'},
-  {hz:200, label:'6× (max)'},
-]
-let speedIdx=1   // default: 5 Hz → 45° takes ~5s at 25 steps
+// Speed: derived from user-input duration
+// hz = steps / seconds  → ticks per second
+let customTimeSec=5        // user-desired rotation duration in seconds
+let _currentHz=10          // computed step_clk frequency
 let angleIdx=1, camAngle=0, targetAngle=0, prevState=IDLE
 
-function changeSpeed(delta){
-  speedIdx=Math.max(0,Math.min(SPEED_PRESETS.length-1,speedIdx+delta))
-  _updateSpeedLabel()
+function _currentDeg(){ return usingCustom ? customDeg : ADEG[angleIdx] }
+function _currentSteps(){ return usingCustom ? customSteps : ASTEPS[angleIdx] }
+
+function _recomputeHz(){
+  const steps=_currentSteps()
+  _currentHz=Math.max(0.5, steps/Math.max(customTimeSec,0.1))
 }
+
+function changeSpeed(delta){ /* legacy no-op */ }
+
+function applyCustomTime(){
+  const inp=document.getElementById('custom-time')
+  const val=parseFloat(inp.value)
+  if(!val||val<0.1||val>300){
+    inp.classList.add('invalid'); inp.focus(); return
+  }
+  inp.classList.remove('invalid')
+  customTimeSec=val
+  _recomputeHz()
+  _updateSpeedLabel()
+  addLog(`Thời gian quay: ${customTimeSec}s → step_clk ${_currentHz.toFixed(2)}Hz`,'#c8973a')
+}
+
 function _updateSpeedLabel(){
-  const p=SPEED_PRESETS[speedIdx]
-  const steps=ASTEPS[angleIdx]
-  const secs=(steps/p.hz).toFixed(1)
-  document.getElementById('spd-lbl').textContent=ADEG[angleIdx]+'° / '+secs+'s'
-  document.getElementById('spd-sub').textContent='step_clk '+p.hz+'Hz'
+  _recomputeHz()
+  document.getElementById('spd-sub').textContent='step_clk '+_currentHz.toFixed(2)+'Hz'
 }
 
 // ═══════════════════════════════════════════════════
-//  ANGLE BUTTONS
+//  ANGLE BUTTONS + CUSTOM INPUT
 // ═══════════════════════════════════════════════════
 const aw=document.getElementById('ang-wrap')
 ADEG.forEach((d,i)=>{
@@ -191,10 +225,43 @@ ADEG.forEach((d,i)=>{
   aw.appendChild(b)
 })
 function setAngle(i){
-  angleIdx=i; fsm.target=ASTEPS[i]
+  angleIdx=i; usingCustom=false
+  fsm.target=ASTEPS[i]
   document.querySelectorAll('.abtn').forEach((b,j)=>b.classList.toggle('on',j===i))
+  document.getElementById('btn-set-angle').classList.remove('on')
+  document.getElementById('custom-deg').classList.remove('invalid')
   _updateSpeedLabel()
 }
+
+function applyCustomAngle(){
+  const inp=document.getElementById('custom-deg')
+  const val=parseFloat(inp.value)
+  if(!val || val<1 || val>3600){
+    inp.classList.add('invalid')
+    inp.focus()
+    return
+  }
+  inp.classList.remove('invalid')
+  customDeg=Math.round(val*10)/10
+  customSteps=Math.round(customDeg/1.8)
+  if(customSteps<1) customSteps=1
+  usingCustom=true
+  fsm.target=customSteps
+  // deselect preset buttons
+  document.querySelectorAll('.abtn').forEach(b=>b.classList.remove('on'))
+  document.getElementById('btn-set-angle').classList.add('on')
+  addLog(`Góc tùy chỉnh: ${customDeg}° → ${customSteps} steps`,'#c8973a')
+  _updateSpeedLabel()
+}
+
+// Allow Enter key in custom inputs
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=document.getElementById('custom-deg')
+  if(inp) inp.addEventListener('keydown',e=>{if(e.key==='Enter') applyCustomAngle()})
+  const tinp=document.getElementById('custom-time')
+  if(tinp) tinp.addEventListener('keydown',e=>{if(e.key==='Enter') applyCustomTime()})
+})
+
 setAngle(1)
 
 // ═══════════════════════════════════════════════════
@@ -202,14 +269,15 @@ setAngle(1)
 // ═══════════════════════════════════════════════════
 function pressBtn(){
   if(fsm.state!==IDLE){addLog(`BTN ignored — state is ${SN[fsm.state]}`,'#2e3650');return}
-  fsm.btn=true; fsm.target=ASTEPS[angleIdx]
-  targetAngle=camAngle+ADEG[angleIdx]
-  addLog(`BTN pressed → target ${ADEG[angleIdx]}° (${ASTEPS[angleIdx]} steps)`,SC[RUN])
+  const deg=_currentDeg(), steps=_currentSteps()
+  fsm.btn=true; fsm.target=steps
+  targetAngle=camAngle+deg
+  addLog(`BTN pressed → target ${deg}° (${steps} steps)`,SC[RUN])
   const b=document.getElementById('btn-go')
   b.classList.add('flash'); setTimeout(()=>b.classList.remove('flash'),200)
 }
 function doReset(){
-  fsm={state:IDLE,wait_cnt:0,en:false,count:0,done:false,seq:0,btn:false,target:ASTEPS[angleIdx],ticks:0,t:0}
+  fsm={state:IDLE,wait_cnt:0,en:false,count:0,done:false,seq:0,btn:false,target:_currentSteps(),ticks:0,t:0}
   camAngle=0; targetAngle=0; prevState=IDLE
   addLog('RESET — camera at 0°, FSM cleared','#c8973a')
 }
@@ -664,8 +732,8 @@ function loop(ts){
   if(!lastTs)lastTs=ts
   const real=Math.min((ts-lastTs)/1000,0.1)
   lastTs=ts
-  const hz=SPEED_PRESETS[speedIdx].hz
-  const STEP_DT=1/hz
+  _recomputeHz()
+  const STEP_DT=1/_currentHz
   accum+=real
 
   // Run FSM ticks
@@ -676,7 +744,7 @@ function loop(ts){
 
     // Log transitions
     if(fsm.state!==prev){
-      if(fsm.state===RUN)   addLog('IDLE → RUN    target='+fsm.target+' steps  ('+ADEG[angleIdx]+'°)',SC[RUN])
+      if(fsm.state===RUN)   addLog('IDLE → RUN    target='+fsm.target+' steps  ('+_currentDeg()+'°)',SC[RUN])
       if(fsm.state===DONE)  addLog('RUN  → DONE   completed '+fsm.count+' steps = '+(fsm.count*1.8).toFixed(1)+'°',SC[DONE])
       if(fsm.state===WAIT)  addLog('DONE → WAIT   (8-cycle cooldown)',SC[WAIT])
       if(fsm.state===IDLE)  addLog('WAIT → IDLE   ✓ ready for next command',SC[IDLE])
@@ -685,8 +753,9 @@ function loop(ts){
 
   // Smooth camera angle — follows step count exactly
   if(fsm.state===RUN||fsm.state===DONE){
+    const deg=_currentDeg()
     const prog=fsm.count/Math.max(fsm.target,1)
-    camAngle=targetAngle-ADEG[angleIdx]+ADEG[angleIdx]*prog
+    camAngle=targetAngle-deg+deg*prog
   }
 
   drawScene()
